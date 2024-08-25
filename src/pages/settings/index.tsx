@@ -8,7 +8,7 @@ import {
   IconUser,
 } from '@tabler/icons-react'
 import { Layout } from '@/components/custom/layout'
-import { Search } from '@/components/search'
+// import { Search } from '@/components/search'
 import { Separator } from '@/components/ui/separator'
 import SidebarNav from './components/sidebar-nav'
 
@@ -16,11 +16,11 @@ export default function Settings() {
   return (
     <Layout fixed>
       {/* ===== Top Heading ===== */}
-      <Layout.Header>
+      {/* <Layout.Header>
         <Search />
         <div className='ml-auto flex items-center space-x-4'>
         </div>
-      </Layout.Header>
+      </Layout.Header> */}
 
       <Layout.Body className='flex flex-col'>
         <div className='space-y-0.5'>
