@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TaskListProps {
   tasks: Task[];
-  onTaskComplete: (taskId: number) => void; // Function to handle task completion
+  onTaskComplete: (taskId: number|null) => void; // Function to handle task completion
 }
 
 const TaskList: React.FC<TaskListProps> = ({ tasks, onTaskComplete }) => {

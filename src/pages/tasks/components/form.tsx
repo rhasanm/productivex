@@ -2,14 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/custom/button";
+import React from "react";
+
+interface TaskFormProps {
+  handleNewTask: (task: string) => void;
+}
 
 const formSchema = z.object({
   task: z.string().min(2, {
@@ -17,7 +17,7 @@ const formSchema = z.object({
   }),
 });
 
-export default function TaskForm() {
+const TaskForm: React.FC<TaskFormProps> = ({ handleNewTask }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -26,8 +26,11 @@ export default function TaskForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    handleNewTask(values.task);
+
+    form.setValue("task", "")
   }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="m-4 flex">
@@ -52,4 +55,6 @@ export default function TaskForm() {
       </form>
     </Form>
   );
-}
+};
+
+export default TaskForm;

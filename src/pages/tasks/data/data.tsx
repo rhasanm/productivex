@@ -11,6 +11,10 @@ import {
 
 export const labels = [
   {
+    value: 'general',
+    label: 'General',
+  },
+  {
     value: 'bug',
     label: 'Bug',
   },

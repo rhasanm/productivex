@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import TaskList from "./components/list";
 import TaskForm from "./components/form";
- 
+
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -25,12 +25,37 @@ export default function Tasks() {
     fetchTasks();
   }, []);
 
-  const handleTaskComplete = (taskId: number) => {
+  const handleTaskComplete = (taskId: number | null) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === taskId ? { ...task, status: "done" } : task
       )
     );
+  };
+
+  const handleNewTask = async (newTask: string) => {
+    const [label, title] = newTask.split(":").map((part) => part.trim());
+
+    const task: Task = {
+      id: null,
+      title: title ?? label,
+      status: "todo",
+      created_at: new Date().toISOString(),
+      label: title ? label : "general",
+      priority: "low",
+      due_date: null,
+      start_date: null,
+      updated_at: new Date().toISOString(),
+      description: null,
+    };
+
+    try {
+      const newTaskList: Task[] = await invoke("add_task", { task });
+      setTasks(newTaskList);
+    } catch (error) {
+      console.log(error);
+      console.error("Failed to add task:", error);
+    }
   };
 
   return (
@@ -56,7 +81,7 @@ export default function Tasks() {
           <TabsContent value="list" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
               <Card className="min-h-[600px]">
-                <TaskForm />
+                <TaskForm handleNewTask={handleNewTask} />
                 <TaskList onTaskComplete={handleTaskComplete} tasks={tasks} />
               </Card>
             </div>
