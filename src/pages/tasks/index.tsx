@@ -3,7 +3,7 @@ import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
-import { Task } from "./data/schema";
+import { Task, TaskInput } from "./data/schema";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import TaskList from "./components/list";
@@ -36,7 +36,7 @@ export default function Tasks() {
   const handleNewTask = async (newTask: string) => {
     const [label, title] = newTask.split(":").map((part) => part.trim());
 
-    const task: Task = {
+    const task: TaskInput = {
       id: null,
       title: title ?? label,
       status: "todo",
