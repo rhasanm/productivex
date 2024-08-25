@@ -5,6 +5,8 @@ CREATE TABLE tasks (
     label TEXT,
     status TEXT,
     priority TEXT,
+    due_date DATETIME,
+    start_date DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

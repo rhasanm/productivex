@@ -14,6 +14,8 @@ struct Task {
     label: Option<String>,
     status: Option<String>,
     priority: Option<String>,
+    due_date: Option<NaiveDateTime>,
+    start_date: Option<NaiveDateTime>,
     created_at: Option<NaiveDateTime>,
     updated_at: Option<NaiveDateTime>,
 }
@@ -29,6 +31,8 @@ async fn task_list(pool: &SqlitePool) -> Result<Vec<Task>, String> {
             label,
             status,
             priority,
+            start_date,
+            due_date,
             created_at,
             updated_at
         FROM tasks;
