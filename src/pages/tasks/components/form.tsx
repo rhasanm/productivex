@@ -38,10 +38,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ handleNewTask }) => {
           control={form.control}
           name="task"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="min-w-90">
               <FormControl>
                 <Input
-                  className="border-gray-400 min-w-[955px]"
+                  className="border-gray-400"
                   placeholder="Add a task..."
                   {...field}
                 />

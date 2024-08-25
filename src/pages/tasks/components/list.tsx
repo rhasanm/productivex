@@ -12,11 +12,11 @@ interface TaskListProps {
 const TaskList: React.FC<TaskListProps> = ({ tasks, onTaskComplete }) => {
   return (
     <ul className="ml-6 space-y-4">
-      <ScrollArea className="h-[550px] w-[1025px]">
+      <ScrollArea className="h-[550px] min-w-80">
         {tasks.map((task) => (
           <li
             key={task.id}
-            className="max-w-[1028px] min-w-[1028px] flex items-center justify-between p-4 rounded shadow-sm"
+            className="flex items-center justify-between p-4 rounded shadow-sm"
           >
             <div>
               <h3 className="text-lg font-bold">{task.title}</h3>
