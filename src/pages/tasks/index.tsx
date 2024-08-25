@@ -25,12 +25,25 @@ export default function Tasks() {
     fetchTasks();
   }, []);
 
-  const handleTaskComplete = (taskId: number | null) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: "done" } : task
-      )
-    );
+  const handleTaskComplete = async (taskId: number | null) => {
+    if (taskId === null) return;
+  
+    try {
+      await invoke("update_task_status", {
+        payload: {
+          task_id: taskId,
+          new_status: "done",
+        },
+      });
+  
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId ? { ...task, status: "done" } : task
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+    }
   };
 
   const handleNewTask = async (newTask: string) => {

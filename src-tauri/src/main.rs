@@ -33,6 +33,29 @@ struct TaskInput {
     updated_at: Option<String>,
 }
 
+#[derive(Deserialize)]
+struct UpdateTaskStatusPayload {
+    task_id: i64,
+    new_status: String,
+}
+
+#[tauri::command]
+async fn update_task_status(payload: UpdateTaskStatusPayload, pool: State<'_, SqlitePool>) -> Result<(), String> {
+    let UpdateTaskStatusPayload { task_id, new_status } = payload;
+
+    match sqlx::query!(
+        "UPDATE tasks SET status = ? WHERE id = ?",
+        new_status,
+        task_id
+    )
+    .execute(pool.inner())
+    .await
+    {
+        Ok(_) => Ok(()),
+        Err(err) => Err(format!("Failed to update task status: {}", err)),
+    }
+}
+
 async fn task_list(pool: &SqlitePool) -> Result<Vec<Task>, String> {
     let tasks = sqlx::query_as!(
         Task,
@@ -122,7 +145,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tauri::Builder::default()
         .manage(pool)
-        .invoke_handler(tauri::generate_handler![get_tasks, add_task])
+        .invoke_handler(tauri::generate_handler![get_tasks, add_task, update_task_status])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
