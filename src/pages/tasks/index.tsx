@@ -1,9 +1,26 @@
 import { Layout } from '@/components/custom/layout'
 import { DataTable } from './components/data-table'
 import { columns } from './components/columns'
-import { tasks } from './data/tasks'
+import { invoke } from '@tauri-apps/api'
+import { useEffect, useState } from 'react';
 
 export default function Tasks() {
+  const [tasks, setTasks] = useState([]);
+  
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const fetchedTasks: [] = await invoke('get_tasks');
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    }
+
+    fetchTasks(); // Call the async function to fetch tasks
+  }, []);
+
+  console.log(tasks);
   return (
     <Layout>
       {/* ===== Top Heading ===== */}
