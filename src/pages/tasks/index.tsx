@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import TaskList from "./components/list";
 import TaskForm from "./components/form";
+import Kanban from "./components/kanban";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -89,6 +90,11 @@ export default function Tasks() {
           <TabsContent value="table" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
               <DataTable data={tasks} columns={columns} />
+            </div>
+          </TabsContent>
+          <TabsContent value="kanban" className="space-y-4">
+            <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
+              <Kanban />
             </div>
           </TabsContent>
           <TabsContent value="list" className="space-y-4">
