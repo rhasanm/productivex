@@ -38,7 +38,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ handleNewTask }) => {
           control={form.control}
           name="task"
           render={({ field }) => (
-            <FormItem className="min-w-90">
+            <FormItem className="min-w-92">
               <FormControl>
                 <Input
                   className="border-gray-400"
@@ -49,7 +49,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ handleNewTask }) => {
             </FormItem>
           )}
         />
-        <Button className="ml-4" type="submit">
+        <Button className="ml-2" type="submit">
           +ADD
         </Button>
       </form>
