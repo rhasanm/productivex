@@ -80,7 +80,7 @@ export default function Tasks() {
           </TabsContent>
           <TabsContent value="list" className="space-y-4">
             <div className="w-full -mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-              <Card className="min-h-[600px] w-full">
+              <Card className="min-h-[650px] w-full">
                 <TaskForm handleNewTask={handleNewTask} />
                 <TaskList onTaskComplete={handleTaskComplete} tasks={tasks} />
               </Card>
