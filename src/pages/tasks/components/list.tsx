@@ -19,7 +19,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onTaskComplete }) => {
             className="flex items-center justify-between p-4 rounded shadow-sm"
           >
             <div>
-              <h3 className="text-lg font-bold">{task.title}</h3>
+              <h3 className="text-md font-bold">{task.title}</h3>
               <div className="text-sm text-gray-600">
                 <Badge className="mr-2">{task.label}</Badge>
                 <span className="mr-2">Status: {task.status}</span>

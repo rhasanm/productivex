@@ -1,11 +1,17 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use sqlx::migrate::Migrator;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
+use std::env;
+use std::str::FromStr;
 
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
-use sqlx::sqlite::SqlitePool;
 use tauri::State;
 
-#[derive(Debug, Serialize, Deserialize)]
+use sqlx::{ConnectOptions, Connection, SqliteConnection};
+
+static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 struct Task {
     id: Option<i64>,
     title: String,
@@ -40,16 +46,20 @@ struct UpdateTaskStatusPayload {
 }
 
 #[tauri::command]
-async fn update_task_status(payload: UpdateTaskStatusPayload, pool: State<'_, SqlitePool>) -> Result<(), String> {
-    let UpdateTaskStatusPayload { task_id, new_status } = payload;
-
-    match sqlx::query!(
-        "UPDATE tasks SET status = ? WHERE id = ?",
+async fn update_task_status(
+    payload: UpdateTaskStatusPayload,
+    pool: State<'_, SqlitePool>,
+) -> Result<(), String> {
+    let UpdateTaskStatusPayload {
+        task_id,
         new_status,
-        task_id
-    )
-    .execute(pool.inner())
-    .await
+    } = payload;
+
+    match sqlx::query("UPDATE tasks SET status = ? WHERE id = ?")
+        .bind(new_status)
+        .bind(task_id)
+        .execute(pool.inner())
+        .await
     {
         Ok(_) => Ok(()),
         Err(err) => Err(format!("Failed to update task status: {}", err)),
@@ -57,8 +67,7 @@ async fn update_task_status(payload: UpdateTaskStatusPayload, pool: State<'_, Sq
 }
 
 async fn task_list(pool: &SqlitePool) -> Result<Vec<Task>, String> {
-    let tasks = sqlx::query_as!(
-        Task,
+    let tasks = sqlx::query_as::<_, Task>(
         r#"
         SELECT
             id,
@@ -73,7 +82,7 @@ async fn task_list(pool: &SqlitePool) -> Result<Vec<Task>, String> {
             updated_at
         FROM tasks
         ORDER BY id DESC;
-        "#
+        "#,
     )
     .fetch_all(pool)
     .await
@@ -106,25 +115,24 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
         updated_at: parse_date(task.updated_at),
     };
 
-    let insert_result = sqlx::query!(
-        "INSERT INTO tasks (title, description, label, status, priority, due_date, start_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        task.title,
-        task.description,
-        task.label,
-        task.status,
-        task.priority,
-        task.due_date,
-        task.start_date,
-        task.created_at,
-        task.updated_at,
+    let insert_result = sqlx::query(
+        "INSERT INTO tasks (title, description, label, status, priority, due_date, start_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     )
+    .bind(task.title)
+    .bind(task.description)
+    .bind(task.label)
+    .bind(task.status)
+    .bind(task.priority)
+    .bind(task.due_date)
+    .bind(task.start_date)
+    .bind(task.created_at)
+    .bind(task.updated_at)
     .execute(pool.inner())
     .await;
 
     match insert_result {
         Ok(_) => {
-            let tasks_result = sqlx::query_as!(
-                Task,
+            let tasks_result = sqlx::query_as::<_, Task>(
                 "SELECT id, title, description, label, status, priority, due_date, start_date, created_at, updated_at FROM tasks ORDER BY id DESC"
             )
             .fetch_all(pool.inner())
@@ -141,11 +149,24 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let conn = SqliteConnectOptions::from_str("sqlite:tasks.db")?
+        .create_if_missing(true)
+        .connect()
+        .await?;
+
+    SqliteConnection::close(conn).await?;
+
     let pool = SqlitePool::connect("sqlite:tasks.db").await.unwrap();
+
+    MIGRATOR.run(&pool).await.expect("Failed to run migrations");
 
     tauri::Builder::default()
         .manage(pool)
-        .invoke_handler(tauri::generate_handler![get_tasks, add_task, update_task_status])
+        .invoke_handler(tauri::generate_handler![
+            get_tasks,
+            add_task,
+            update_task_status
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

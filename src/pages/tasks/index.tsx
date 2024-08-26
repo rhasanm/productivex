@@ -55,7 +55,7 @@ export default function Tasks() {
       title: title ?? label,
       status: "todo",
       created_at: new Date().toISOString(),
-      label: title ? label : "general",
+      label: title ? label.toLowerCase() : "general",
       priority: "low",
       due_date: null,
       start_date: null,
