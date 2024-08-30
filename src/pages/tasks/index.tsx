@@ -28,7 +28,7 @@ export default function Tasks() {
 
   const handleTaskComplete = async (taskId: number | null) => {
     if (taskId === null) return;
-  
+
     try {
       await invoke("update_task_status", {
         payload: {
@@ -36,7 +36,7 @@ export default function Tasks() {
           new_status: "done",
         },
       });
-  
+
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === taskId ? { ...task, status: "done" } : task
@@ -72,6 +72,21 @@ export default function Tasks() {
     }
   };
 
+  const handleTaskStatusUpdate = async (task: Task, newTasks: Task[]) => {
+    console.log(task)
+    try {
+      await invoke("update_task_status", {
+        payload: {
+          task_id: task.id,
+          new_status: task.status,
+        },
+      });
+      setTasks(newTasks)
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+    }
+  }
+
   return (
     <Layout>
       <Layout.Body>
@@ -94,7 +109,7 @@ export default function Tasks() {
           </TabsContent>
           <TabsContent value="kanban" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-              <Kanban />
+              <Kanban tasks={tasks} taskStatusUpdateHandler={handleTaskStatusUpdate} />
             </div>
           </TabsContent>
           <TabsContent value="list" className="space-y-4">

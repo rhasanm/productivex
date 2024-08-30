@@ -15,7 +15,7 @@ export default function Dashboard() {
   const [_, setTasks] = useState<Task[]>([]);
   const [totalDone, setTotalDone] = useState(0);
   const [totalInProgress, setTotalInProgress] = useState(0);
-  const [totalBlocked, setTotalBlocked] = useState(0);
+  const [totalBacklog, setTotalBacklog] = useState(0);
   const [totalTodo, setTotalTodo] = useState(0);
 
   useEffect(() => {
@@ -25,13 +25,13 @@ export default function Dashboard() {
         setTasks(fetchedTasks);
 
         const done = fetchedTasks.filter(task => task.status === 'done').length;
-        const inProgress = fetchedTasks.filter(task => task.status === 'in_progress').length;
-        const blocked = fetchedTasks.filter(task => task.status === 'blocked').length;
+        const inProgress = fetchedTasks.filter(task => task.status === 'in-progress').length;
+        const backlog = fetchedTasks.filter(task => task.status === 'backlog').length;
         const todo = fetchedTasks.filter(task => task.status === 'todo').length;
 
         setTotalDone(done);
         setTotalInProgress(inProgress);
-        setTotalBlocked(blocked);
+        setTotalBacklog(backlog);
         setTotalTodo(todo);
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -82,11 +82,11 @@ export default function Dashboard() {
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Blocked
+                    Backlog
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>{totalBlocked}</div>
+                  <div className='text-2xl font-bold'>{totalBacklog}</div>
                 </CardContent>
               </Card>
 

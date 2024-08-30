@@ -40,7 +40,7 @@ export const statuses = [
     icon: CircleIcon,
   },
   {
-    value: 'in progress',
+    value: 'in-progress',
     label: 'In Progress',
     icon: StopwatchIcon,
   },
@@ -54,7 +54,7 @@ export const statuses = [
     label: 'Canceled',
     icon: CrossCircledIcon,
   },
-]
+];
 
 export const priorities = [
   {
