@@ -1,10 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { cva } from "class-variance-authority";
-import { GripVertical } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Task } from "../data/schema";
 
 // export interface Task {
@@ -66,7 +63,7 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
         dragging: isOverlay ? "overlay" : isDragging ? "over" : undefined,
       })}
     >
-      <CardContent 
+      <CardContent
         {...attributes}
         {...listeners} className="px-3 pt-3 pb-6 text-left whitespace-pre-wrap">
         {task.title}
