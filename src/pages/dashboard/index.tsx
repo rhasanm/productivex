@@ -71,7 +71,7 @@ export default function Dashboard() {
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Total Todo
+                    Todo
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -82,18 +82,18 @@ export default function Dashboard() {
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Total Blocked
+                    Blocked
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className='text-2xl font-bold'>{totalBlocked}</div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Total In Progress
+                    In Progress
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -104,7 +104,7 @@ export default function Dashboard() {
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Total Done
+                    Done
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
