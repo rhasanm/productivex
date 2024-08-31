@@ -154,7 +154,7 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:tasks.db".to_string());
 
     let conn = SqliteConnectOptions::from_str(&database_url)?
         .create_if_missing(true)
