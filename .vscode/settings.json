@@ -2,5 +2,14 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "files.associations": {
     "*.css": "tailwindcss"
-  }
+  },
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "database": "${workspaceFolder:productivex}/tasks.db",
+      "name": "tasks"
+    }
+  ]
 }

@@ -279,6 +279,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasksState, taskStatus
           activeTask.status !== overTask.status
         ) {
           activeTask.status = overTask.status;
+          taskStatusUpdateHandler(activeTask, tasks);
           return arrayMove(tasks, activeIndex, overIndex - 1);
         }
 

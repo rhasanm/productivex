@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use dotenv::dotenv;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
 use std::env;
@@ -51,7 +52,7 @@ struct UpdateTaskStatusPayload {
 async fn update_task_status(
     payload: UpdateTaskStatusPayload,
     pool: State<'_, SqlitePool>,
-) -> Result<(), String> {
+) -> Result<String, String> {
     let UpdateTaskStatusPayload {
         task_id,
         new_status,
@@ -63,7 +64,7 @@ async fn update_task_status(
         .execute(pool.inner())
         .await
     {
-        Ok(_) => Ok(()),
+        Ok(_) => Ok("Task updated successfull".to_string()),
         Err(err) => Err(format!("Failed to update task status: {}", err)),
     }
 }
@@ -151,14 +152,18 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let conn = SqliteConnectOptions::from_str("sqlite:tasks.db")?
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let conn = SqliteConnectOptions::from_str(&database_url)?
         .create_if_missing(true)
         .connect()
         .await?;
 
     SqliteConnection::close(conn).await?;
 
-    let pool = SqlitePool::connect("sqlite:tasks.db").await.unwrap();
+    let pool = SqlitePool::connect(&database_url).await.unwrap();
 
     MIGRATOR.run(&pool).await.expect("Failed to run migrations");
 

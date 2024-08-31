@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import TaskList from "./components/list";
 import TaskForm from "./components/form";
 import Kanban from "./components/kanban";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -73,15 +74,24 @@ export default function Tasks() {
   };
 
   const handleTaskStatusUpdate = async (task: Task, newTasks: Task[]) => {
-    console.log(task)
     try {
-      await invoke("update_task_status", {
+      const response = await invoke("update_task_status", {
         payload: {
           task_id: task.id,
           new_status: task.status,
         },
       });
       setTasks(newTasks)
+      toast({
+        title: `Task status updated to ${task.status}`,
+        description: (
+          <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
+            <code className='text-white'>{JSON.stringify(`${response}`, null, 2)}</code>
+          </pre>
+        ),
+        variant: 'default', 
+        duration: 1000
+      })
     } catch (error) {
       console.error("Failed to update task status:", error);
     }
