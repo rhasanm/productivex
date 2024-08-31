@@ -49,7 +49,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ handleNewTask }) => {
             </FormItem>
           )}
         />
-        <Button className="ml-2 flex-shrink-0" type="submit">
+        <Button variant="secondary" className="ml-2 flex-shrink-0" type="submit">
           +ADD
         </Button>
       </form>
