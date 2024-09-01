@@ -10,6 +10,8 @@ import TaskList from "./components/list";
 import TaskForm from "./components/form";
 import Kanban from "./components/kanban";
 import { toast } from "@/components/ui/use-toast";
+// import { GanttChart } from "./components/GanttChart";
+import GanttChart from './components/gantt/App';
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -89,7 +91,7 @@ export default function Tasks() {
             <code className='text-white'>{JSON.stringify(`${response}`, null, 2)}</code>
           </pre>
         ),
-        variant: 'default', 
+        variant: 'default',
         duration: 1000
       })
     } catch (error) {
@@ -120,6 +122,11 @@ export default function Tasks() {
           <TabsContent value="kanban" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
               <Kanban tasks={tasks} taskStatusUpdateHandler={handleTaskStatusUpdate} />
+            </div>
+          </TabsContent>
+          <TabsContent value="gantt" className="space-y-4">
+            <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
+              <GanttChart initTasks={tasks} />
             </div>
           </TabsContent>
           <TabsContent value="list" className="space-y-4">

@@ -38,6 +38,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
+    "gantt-task-react": "^0.3.9",
     "install": "^0.13.0",
     "lucide-react": "^0.435.0",
     "npm": "^10.8.2",
