@@ -3,6 +3,7 @@
 use dotenv::dotenv;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
+use std::collections::HashMap;
 use std::env;
 use std::str::FromStr;
 
@@ -46,6 +47,80 @@ struct TaskInput {
 struct UpdateTaskStatusPayload {
     task_id: i64,
     new_status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct TaskUpdateInput {
+    id: i64,
+    title: Option<String>,
+    description: Option<String>,
+    label: Option<String>,
+    status: Option<String>,
+    priority: Option<String>,
+    due_date: Option<String>,
+    start_date: Option<String>,
+    created_at: Option<String>,
+    updated_at: Option<String>,
+}
+
+#[tauri::command]
+async fn update_task(
+    payload: TaskUpdateInput,
+    pool: State<'_, SqlitePool>,
+) -> Result<String, String> {
+    let mut updates: HashMap<&str, &String> = HashMap::new();
+
+    if let Some(title) = &payload.title {
+        updates.insert("title", title);
+    }
+    if let Some(description) = &payload.description {
+        updates.insert("description", description);
+    }
+    if let Some(label) = &payload.label {
+        updates.insert("label", label);
+    }
+    if let Some(status) = &payload.status {
+        updates.insert("status", status);
+    }
+    if let Some(priority) = &payload.priority {
+        updates.insert("priority", priority);
+    }
+    if let Some(due_date) = &payload.due_date {
+        updates.insert("due_date", due_date);
+    }
+    if let Some(start_date) = &payload.start_date {
+        updates.insert("start_date", start_date);
+    }
+    if let Some(created_at) = &payload.created_at {
+        updates.insert("created_at", created_at);
+    }
+    if let Some(updated_at) = &payload.updated_at {
+        updates.insert("updated_at", updated_at);
+    }
+
+    let mut query = String::from("UPDATE tasks SET ");
+    let mut first = true;
+
+    for (field, value) in &updates {
+        if !first {
+            query.push_str(", ");
+        }
+
+        if value.as_str() == "null" {
+            query.push_str(&format!("{} = NULL", field));
+        } else {
+            query.push_str(&format!("{} = '{}'", field, value));
+            // query.push_str(&format!("{} = '{}'", field, value.replace('\'', "''")));
+        }
+        first = false;
+    }
+
+    query.push_str(&format!(" WHERE id = {}", payload.id));
+
+    match sqlx::query(&query).execute(pool.inner()).await {
+        Ok(_) => Ok("Task updated successfully".to_string()),
+        Err(e) => Err(format!("Failed to update task: {}", e)),
+    }
 }
 
 #[tauri::command]
@@ -172,7 +247,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .invoke_handler(tauri::generate_handler![
             get_tasks,
             add_task,
-            update_task_status
+            update_task_status,
+            update_task
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

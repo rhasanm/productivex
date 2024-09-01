@@ -1,23 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./components/view-switcher";
-// import { getStartEndDateForProject, initTasks } from "./helper";
 import "gantt-task-react/dist/index.css";
 import { Task as TaskSchema } from "../../data/schema";
 import { prepareGanttData } from "./helper";
 
 interface Props {
-  initTasks: TaskSchema[]
+  tasks: TaskSchema[];
 }
 
-// Init
-const App: React.FC<Props> = ({ initTasks }) => {
-  const preparedTasks = prepareGanttData(initTasks);
-  console.log(preparedTasks)
-
+const GanttChart: React.FC<Props> = ({ tasks }) => {
+  let preparedTasks = prepareGanttData(tasks);
   const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
-  const [tasks, setTasks] = React.useState<Task[]>(preparedTasks);
+  const [ganttTasks, setGanttTasks] = React.useState<Task[]>(preparedTasks);
   const [isChecked, setIsChecked] = React.useState(false);
+
+  useEffect(() => {
+    preparedTasks = prepareGanttData(tasks);
+    setGanttTasks(preparedTasks);
+  }, [tasks]);
+
   let columnWidth = 65;
   if (view === ViewMode.Year) {
     columnWidth = 350;
@@ -28,37 +30,34 @@ const App: React.FC<Props> = ({ initTasks }) => {
   }
 
   const handleTaskChange = (task: Task) => {
-    console.log("On date change Id:" + task.id);
-    let newTasks = tasks.map(t => (t.id === task.id ? task : t));
+    let newTasks = ganttTasks.map((t) => (t.id === task.id ? task : t));
     if (task.project) {
-      // const [start, end] = getStartEndDateForProject(newTasks, task.project);
-      const [start, end] = [task.start, task.end]
-      console.log(start, end)
-      const project = newTasks[newTasks.findIndex(t => t.id === task.project)];
+      const [start, end] = [task.start, task.end];
+      const project =
+        newTasks[newTasks.findIndex((t) => t.id === task.project)];
       if (
         project.start.getTime() !== start.getTime() ||
         project.end.getTime() !== end.getTime()
       ) {
         const changedProject = { ...project, start, end };
-        newTasks = newTasks.map(t =>
+        newTasks = newTasks.map((t) =>
           t.id === task.project ? changedProject : t
         );
       }
     }
-    setTasks(newTasks);
+    setGanttTasks(newTasks);
   };
 
   const handleTaskDelete = (task: Task) => {
     const conf = window.confirm("Are you sure about " + task.name + " ?");
     if (conf) {
-      setTasks(tasks.filter(t => t.id !== task.id));
+      setGanttTasks(ganttTasks.filter((t) => t.id !== task.id));
     }
     return conf;
   };
 
   const handleProgressChange = async (task: Task) => {
-    setTasks(tasks.map(t => (t.id === task.id ? task : t)));
-    console.log("On progress change Id:" + task.id);
+    setGanttTasks(ganttTasks.map((t) => (t.id === task.id ? task : t)));
   };
 
   const handleDblClick = (task: Task) => {
@@ -66,8 +65,7 @@ const App: React.FC<Props> = ({ initTasks }) => {
   };
 
   const handleClick = (task: Task) => {
-    console.log(task)
-    console.log("On Click event Id:" + task.id);
+    console.log(task);
   };
 
   const handleSelect = (task: Task, isSelected: boolean) => {
@@ -75,19 +73,20 @@ const App: React.FC<Props> = ({ initTasks }) => {
   };
 
   const handleExpanderClick = (task: Task) => {
-    setTasks(tasks.map(t => (t.id === task.id ? task : t)));
-    console.log("On expander click Id:" + task.id);
+    setGanttTasks(ganttTasks.map((t) => (t.id === task.id ? task : t)));
   };
 
-  return (
+  return ganttTasks.length === 0 ? (
+    <></>
+  ) : (
     <div className="Wrapper">
       <ViewSwitcher
-        onViewModeChange={viewMode => setView(viewMode)}
+        onViewModeChange={(viewMode) => setView(viewMode)}
         onViewListChange={setIsChecked}
         isChecked={isChecked}
       />
       <Gantt
-        tasks={tasks}
+        tasks={ganttTasks.filter((task) => task.start !== null)}
         viewMode={view}
         onDateChange={handleTaskChange}
         onDelete={handleTaskDelete}
@@ -97,11 +96,11 @@ const App: React.FC<Props> = ({ initTasks }) => {
         onSelect={handleSelect}
         onExpanderClick={handleExpanderClick}
         listCellWidth={isChecked ? "155px" : ""}
-        ganttHeight={300}
+        ganttHeight={550}
         columnWidth={columnWidth}
       />
     </div>
   );
 };
 
-export default App;
+export default GanttChart;

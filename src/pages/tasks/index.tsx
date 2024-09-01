@@ -10,8 +10,7 @@ import TaskList from "./components/list";
 import TaskForm from "./components/form";
 import Kanban from "./components/kanban";
 import { toast } from "@/components/ui/use-toast";
-// import { GanttChart } from "./components/GanttChart";
-import GanttChart from './components/gantt/App';
+import GanttChart from "./components/gantt/App";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -77,27 +76,51 @@ export default function Tasks() {
 
   const handleTaskStatusUpdate = async (task: Task, newTasks: Task[]) => {
     try {
-      const response = await invoke("update_task_status", {
+      await invoke("update_task_status", {
         payload: {
           task_id: task.id,
           new_status: task.status,
         },
       });
-      setTasks(newTasks)
+
+      if (task.status === "in-progress") {
+        const date = new Date();
+        await invoke("update_task", {
+          payload: {
+            id: task.id,
+            start_date: date,
+          },
+        });
+        task.start_date = date;
+      }
+
+      if (task.status === "todo" || task.status === "backlog") {
+        await invoke("update_task", {
+          payload: {
+            id: task.id,
+            start_date: "null",
+          },
+        });
+        task.start_date = null;
+      }
+
+      setTasks(newTasks);
       toast({
         title: `Task status updated to ${task.status}`,
         description: (
-          <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-            <code className='text-white'>{JSON.stringify(`${response}`, null, 2)}</code>
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">
+              {JSON.stringify(`${task.title} status updated`, null, 2)}
+            </code>
           </pre>
         ),
-        variant: 'default',
-        duration: 1000
-      })
+        variant: "default",
+        duration: 1000,
+      });
     } catch (error) {
       console.error("Failed to update task status:", error);
     }
-  }
+  };
 
   return (
     <Layout>
@@ -121,12 +144,15 @@ export default function Tasks() {
           </TabsContent>
           <TabsContent value="kanban" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-              <Kanban tasks={tasks} taskStatusUpdateHandler={handleTaskStatusUpdate} />
+              <Kanban
+                tasks={tasks}
+                taskStatusUpdateHandler={handleTaskStatusUpdate}
+              />
             </div>
           </TabsContent>
           <TabsContent value="gantt" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-              <GanttChart initTasks={tasks} />
+              <GanttChart tasks={tasks} />
             </div>
           </TabsContent>
           <TabsContent value="list" className="space-y-4">
