@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::env;
 use std::str::FromStr;
 
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Local, NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -27,7 +27,7 @@ struct Task {
     start_date: Option<NaiveDateTime>,
     created_at: Option<NaiveDateTime>,
     updated_at: Option<NaiveDateTime>,
-    progress: Option<i32>
+    progress: Option<i32>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -42,7 +42,7 @@ struct TaskInput {
     start_date: Option<String>,
     created_at: Option<String>,
     updated_at: Option<String>,
-    progress: Option<i32>
+    progress: Option<i32>,
 }
 
 #[derive(Deserialize)]
@@ -94,12 +94,10 @@ async fn update_task(
     if let Some(start_date) = &payload.start_date {
         updates.insert("start_date", start_date);
     }
-    if let Some(created_at) = &payload.created_at {
-        updates.insert("created_at", created_at);
-    }
-    if let Some(updated_at) = &payload.updated_at {
-        updates.insert("updated_at", updated_at);
-    }
+
+    let updated_at: String = DateTime::<Local>::from(Utc::now()).to_rfc3339();
+    updates.insert("updated_at", &updated_at);
+
     let progress_string = match payload.progress {
         Some(p) => p.to_string(),
         None => String::new(),
@@ -143,7 +141,7 @@ async fn update_task_status(
         new_status,
     } = payload;
 
-    match sqlx::query("UPDATE tasks SET status = ? WHERE id = ?")
+    match sqlx::query("UPDATE tasks SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
         .bind(new_status)
         .bind(task_id)
         .execute(pool.inner())
@@ -188,7 +186,11 @@ async fn get_tasks(pool: State<'_, SqlitePool>) -> Result<Vec<Task>, String> {
 #[tauri::command]
 async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Task>, String> {
     let parse_date = |date_str: Option<String>| -> Option<NaiveDateTime> {
-        date_str.and_then(|s| NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S").ok())
+        date_str.and_then(|s| {
+            DateTime::parse_from_rfc3339(&s)
+                .ok()
+                .map(|dt| dt.naive_utc())
+        })
     };
 
     let task = Task {
@@ -201,12 +203,12 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
         due_date: parse_date(task.due_date),
         start_date: parse_date(task.start_date),
         created_at: parse_date(task.created_at),
-        updated_at: parse_date(task.updated_at),
-        progress: task.progress
+        updated_at: None,
+        progress: task.progress,
     };
 
     let insert_result = sqlx::query(
-        "INSERT INTO tasks (title, description, label, status, priority, due_date, start_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT INTO tasks (title, description, label, status, priority, due_date, start_date, created_at, progress) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     )
     .bind(task.title)
     .bind(task.description)
@@ -216,14 +218,14 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
     .bind(task.due_date)
     .bind(task.start_date)
     .bind(task.created_at)
-    .bind(task.updated_at)
+    .bind(task.progress)
     .execute(pool.inner())
     .await;
 
     match insert_result {
         Ok(_) => {
             let tasks_result = sqlx::query_as::<_, Task>(
-                "SELECT id, title, description, label, status, priority, due_date, start_date, created_at, updated_at FROM tasks ORDER BY id DESC"
+                "SELECT id, title, description, label, status, priority, due_date, start_date, created_at, updated_at, progress FROM tasks ORDER BY id DESC"
             )
             .fetch_all(pool.inner())
             .await;

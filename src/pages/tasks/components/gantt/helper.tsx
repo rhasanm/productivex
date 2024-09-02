@@ -9,7 +9,7 @@ const mapStatusToProgress = (status: TaskSchema["status"]): number => {
     case "todo":
       return 0;
     case "in-progress":
-      return 50;
+      return 5;
     case "done":
       return 100;
     case "backlog":

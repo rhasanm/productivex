@@ -143,9 +143,7 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const startDate = row.getValue("start_date") as string | null;
-      return startDate
-        ? new Date(startDate).toLocaleDateString()
-        : "";
+      return startDate ? new Date(startDate).toLocaleDateString() : "";
     },
   },
   {
@@ -165,9 +163,7 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const createdAt = row.getValue("created_at") as string | null;
-      return createdAt
-        ? new Date(createdAt).toLocaleDateString()
-        : "";
+      return createdAt ? new Date(createdAt).toLocaleDateString() : "";
     },
   },
   {
@@ -177,9 +173,17 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const updatedAt = row.getValue("updated_at") as string | null;
-      return updatedAt
-        ? new Date(updatedAt).toLocaleDateString()
-        : "";
+      return updatedAt ? new Date(updatedAt).toLocaleDateString() : "";
+    },
+  },
+  {
+    accessorKey: "progress",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Progress" />
+    ),
+    cell: ({ row }) => {
+      const progress = row.getValue("progress") as number | null;
+      return progress !== null ? `${progress}%` : "N/A";
     },
   },
   {

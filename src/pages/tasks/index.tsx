@@ -67,9 +67,9 @@ export default function Tasks() {
       priority: "low",
       due_date: null,
       start_date: null,
-      updated_at: new Date().toISOString(),
+      updated_at: null,
       description: null,
-      progress: null
+      progress: 0
     };
 
     try {
@@ -82,8 +82,8 @@ export default function Tasks() {
   };
 
   const handleTaskUpdate = async (task: TaskUpdate) => {
-    console.log(task);
     try {
+      console.log("SDFSDFSD", task)
       const date = new Date();
       const taskUpdate: Partial<Task> = { id: task.id! };
 
@@ -130,6 +130,8 @@ export default function Tasks() {
           duration: 1000,
         });
       } else {
+        console.log(task, date);
+
         await invoke("update_task_status", {
           payload: {
             task_id: task.id,
