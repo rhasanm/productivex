@@ -18,6 +18,10 @@ const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
   const [ganttTasks, setGanttTasks] = React.useState<Task[]>(preparedTasks);
   const [isChecked, setIsChecked] = React.useState(false);
 
+  const currentDate = new Date();
+  const viewDate = new Date(currentDate);
+  viewDate.setDate(currentDate.getDate() - 2);
+
   useEffect(() => {
     preparedTasks = prepareGanttData(tasks);
     setGanttTasks(preparedTasks);
@@ -121,6 +125,7 @@ const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
         listCellWidth={isChecked ? "155px" : ""}
         ganttHeight={550}
         columnWidth={columnWidth}
+        viewDate={viewDate}
       />
     </div>
   );
