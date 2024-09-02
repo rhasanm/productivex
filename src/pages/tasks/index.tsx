@@ -19,6 +19,7 @@ export default function Tasks() {
     async function fetchTasks() {
       try {
         const fetchedTasks: Task[] = await invoke("get_tasks");
+        console.log(fetchedTasks)
         setTasks(fetchedTasks);
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -68,6 +69,7 @@ export default function Tasks() {
       start_date: null,
       updated_at: new Date().toISOString(),
       description: null,
+      progress: null
     };
 
     try {
@@ -90,9 +92,43 @@ export default function Tasks() {
           payload: {
             id: task.id,
             due_date: task.due_date,
+            start_date: task.start_date
           },
         });
         taskUpdate.due_date = task.due_date;
+        taskUpdate.start_date = task.start_date
+        toast({
+          title: `Task updated to ${task.start_date}-${task.due_date}`,
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">
+                {JSON.stringify(`${task.title} date updated`, null, 2)}
+              </code>
+            </pre>
+          ),
+          variant: "default",
+          duration: 1000,
+        });
+      } else if (task.progress) {
+        await invoke("update_task", {
+          payload: {
+            id: task.id,
+            progress: task.progress,
+          },
+        });
+        taskUpdate.progress = task.progress;
+        toast({
+          title: `Task progress updated to ${task.progress}`,
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">
+                {JSON.stringify(`${task.title} progress updated`, null, 2)}
+              </code>
+            </pre>
+          ),
+          variant: "default",
+          duration: 1000,
+        });
       } else {
         await invoke("update_task_status", {
           payload: {
@@ -142,23 +178,23 @@ export default function Tasks() {
             },
           });
         }
+        toast({
+          title: `Task status updated to ${task.status}`,
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">
+                {JSON.stringify(`${task.title} status updated`, null, 2)}
+              </code>
+            </pre>
+          ),
+          variant: "default",
+          duration: 1000,
+        });
       }
       setTasks((prevTasks) =>
         prevTasks.map((t) => (t.id === task.id ? { ...t, ...taskUpdate } : t))
       );
 
-      toast({
-        title: `Task status updated to ${task.status}`,
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">
-              {JSON.stringify(`${task.title} status updated`, null, 2)}
-            </code>
-          </pre>
-        ),
-        variant: "default",
-        duration: 1000,
-      });
     } catch (error) {
       console.error("Failed to update task status:", error);
     }

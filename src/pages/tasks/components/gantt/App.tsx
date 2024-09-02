@@ -51,6 +51,8 @@ const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
     taskUpdateHandler({
       id: parseInt(task.id),
       due_date: task.end,
+      start_date: task.start,
+      title: task.name,
     } as TaskUpdate);
     setGanttTasks(newTasks);
   };
@@ -66,6 +68,10 @@ const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
 
   const handleProgressChange = async (task: Task) => {
     console.log(task);
+    taskUpdateHandler({
+      id: parseInt(task.id),
+      progress: task.progress,
+    } as TaskUpdate);
     setGanttTasks(ganttTasks.map((t) => (t.id === task.id ? task : t)));
   };
 

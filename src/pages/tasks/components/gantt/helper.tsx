@@ -59,7 +59,7 @@ export const prepareGanttData = (tasks: TaskSchema[]): GanttTask[] => {
         type: taskType,
         start: startDate,
         end: endDate,
-        progress: mapStatusToProgress(task.status),
+        progress: task.progress ?? mapStatusToProgress(task.status),
         dependencies: [], // task.dependencies ? task.dependencies.map(dep => dep.toString()) : [],
         isDisabled: task.status === "backlog",
         // styles: {
