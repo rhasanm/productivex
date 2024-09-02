@@ -27,6 +27,7 @@ struct Task {
     start_date: Option<NaiveDateTime>,
     created_at: Option<NaiveDateTime>,
     updated_at: Option<NaiveDateTime>,
+    progress: Option<i32>
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -41,6 +42,7 @@ struct TaskInput {
     start_date: Option<String>,
     created_at: Option<String>,
     updated_at: Option<String>,
+    progress: Option<i32>
 }
 
 #[derive(Deserialize)]
@@ -61,6 +63,7 @@ struct TaskUpdateInput {
     start_date: Option<String>,
     created_at: Option<String>,
     updated_at: Option<String>,
+    progress: Option<i32>,
 }
 
 #[tauri::command]
@@ -96,6 +99,13 @@ async fn update_task(
     }
     if let Some(updated_at) = &payload.updated_at {
         updates.insert("updated_at", updated_at);
+    }
+    let progress_string = match payload.progress {
+        Some(p) => p.to_string(),
+        None => String::new(),
+    };
+    if progress_string != String::new() {
+        updates.insert("progress", &progress_string);
     }
 
     let mut query = String::from("UPDATE tasks SET ");
@@ -157,7 +167,8 @@ async fn task_list(pool: &SqlitePool) -> Result<Vec<Task>, String> {
             start_date,
             due_date,
             created_at,
-            updated_at
+            updated_at,
+            progress
         FROM tasks
         ORDER BY id DESC;
         "#,
@@ -191,6 +202,7 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
         start_date: parse_date(task.start_date),
         created_at: parse_date(task.created_at),
         updated_at: parse_date(task.updated_at),
+        progress: task.progress
     };
 
     let insert_result = sqlx::query(
