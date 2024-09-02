@@ -11,6 +11,7 @@ import TaskForm from "./components/form";
 import Kanban from "./components/kanban";
 import { toast } from "@/components/ui/use-toast";
 import GanttChart from "./components/gantt/App";
+import { Intent } from "./enums";
 
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -19,7 +20,6 @@ export default function Tasks() {
     async function fetchTasks() {
       try {
         const fetchedTasks: Task[] = await invoke("get_tasks");
-        console.log(fetchedTasks)
         setTasks(fetchedTasks);
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -69,7 +69,7 @@ export default function Tasks() {
       start_date: null,
       updated_at: null,
       description: null,
-      progress: 0
+      progress: 0,
     };
 
     try {
@@ -81,122 +81,113 @@ export default function Tasks() {
     }
   };
 
-  const handleTaskUpdate = async (task: TaskUpdate) => {
+  const handleTaskUpdate = async (
+    task: TaskUpdate,
+    intent: null | Intent = null
+  ) => {
     try {
-      console.log("SDFSDFSD", task)
       const date = new Date();
       const taskUpdate: Partial<Task> = { id: task.id! };
+      type Toaster = { title: string; description: string };
+      const toaster: Toaster = { title: "", description: "" };
 
-      if (task.due_date) {
-        await invoke("update_task", {
-          payload: {
-            id: task.id,
-            due_date: task.due_date,
-            start_date: task.start_date
-          },
-        });
-        taskUpdate.due_date = task.due_date;
-        taskUpdate.start_date = task.start_date
-        toast({
-          title: `Task updated to ${task.start_date}-${task.due_date}`,
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">
-                {JSON.stringify(`${task.title} date updated`, null, 2)}
-              </code>
-            </pre>
-          ),
-          variant: "default",
-          duration: 1000,
-        });
-      } else if (task.progress) {
-        await invoke("update_task", {
-          payload: {
-            id: task.id,
-            progress: task.progress,
-          },
-        });
-        taskUpdate.progress = task.progress;
-        toast({
-          title: `Task progress updated to ${task.progress}`,
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">
-                {JSON.stringify(`${task.title} progress updated`, null, 2)}
-              </code>
-            </pre>
-          ),
-          variant: "default",
-          duration: 1000,
-        });
-      } else {
-        console.log(task, date);
+      switch (intent) {
+        case "deadline":
+          await invoke("update_task", {
+            payload: {
+              id: task.id,
+              due_date: task.due_date,
+              start_date: task.start_date,
+            },
+          });
 
-        await invoke("update_task_status", {
-          payload: {
-            task_id: task.id,
-            new_status: task.status,
-          },
-        });
+          taskUpdate.due_date = task.due_date;
+          taskUpdate.start_date = task.start_date;
 
-        if (task.status === "in-progress") {
-          let dueDate: Date | null = task.due_date;
-          if (!dueDate) {
-            dueDate = new Date(date);
+          toaster.title = `Task updated to ${task.start_date}-${task.due_date}`;
+          toaster.description = `${task.title} date updated`;
+          break;
+        case "progress":
+          await invoke("update_task", {
+            payload: {
+              id: task.id,
+              progress: task.progress,
+            },
+          });
+          taskUpdate.progress = task.progress;
+
+          toaster.title = `Task progress updated to ${task.progress}`;
+          toaster.description = `${task.title} progress updated`;
+          break;
+        default:
+          await invoke("update_task_status", {
+            payload: {
+              task_id: task.id,
+              new_status: task.status,
+            },
+          });
+
+          if (task.status === "in-progress") {
+            const dueDate = new Date(date);
             dueDate.setDate(dueDate.getDate() + 7);
+
+            taskUpdate.start_date = date;
             taskUpdate.due_date = dueDate;
+
+            await invoke("update_task", {
+              payload: {
+                id: task.id,
+                start_date: taskUpdate.start_date,
+                due_date: taskUpdate.due_date,
+              },
+            });
           }
-          taskUpdate.start_date = date;
 
-          await invoke("update_task", {
-            payload: {
-              id: task.id,
-              start_date: taskUpdate.start_date,
-              due_date: taskUpdate.due_date,
-            },
-          });
-        }
+          if (task.status === "done") {
+            taskUpdate.due_date = date;
 
-        if (task.status === "done") {
-          taskUpdate.due_date = date;
+            await invoke("update_task", {
+              payload: {
+                id: task.id,
+                due_date: taskUpdate.due_date,
+              },
+            });
+          }
 
-          await invoke("update_task", {
-            payload: {
-              id: task.id,
-              due_date: taskUpdate.due_date,
-            },
-          });
-        }
+          if (task.status === "todo" || task.status === "backlog") {
+            taskUpdate.start_date = null;
+            taskUpdate.due_date = null;
 
-        if (task.status === "todo" || task.status === "backlog") {
-          taskUpdate.start_date = null;
-          taskUpdate.due_date = null;
+            await invoke("update_task", {
+              payload: {
+                id: task.id,
+                start_date: "null",
+                due_date: "null",
+              },
+            });
+          }
 
-          await invoke("update_task", {
-            payload: {
-              id: task.id,
-              start_date: taskUpdate.start_date,
-              due_date: taskUpdate.due_date,
-            },
-          });
-        }
-        toast({
-          title: `Task status updated to ${task.status}`,
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">
-                {JSON.stringify(`${task.title} status updated`, null, 2)}
-              </code>
-            </pre>
-          ),
-          variant: "default",
-          duration: 1000,
-        });
+          toaster.title = `Task status updated to ${task.status}`;
+          toaster.description = `${task.title} status updated`;
+          break;
       }
+
       setTasks((prevTasks) =>
         prevTasks.map((t) => (t.id === task.id ? { ...t, ...taskUpdate } : t))
       );
 
+      toast({
+        title: toaster.title,
+        description: (
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">
+              {JSON.stringify(toaster.description, null, 2)}
+            </code>
+          </pre>
+        ),
+        variant: "default",
+        duration: 1000,
+      });
     } catch (error) {
       console.error("Failed to update task status:", error);
     }

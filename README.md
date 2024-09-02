@@ -11,6 +11,25 @@ Features
 - Analytics and Reporting: Gain insights into your productivity patterns with detailed reports.
 Screenshots
 
+## Screenshots
+
+### Dashboard
+![Dashboard](docs/dashboard.png)
+
+### Settings
+![Settings](docs/settings.png)
+
+### Tasks Gantt View
+![Tasks Gantt View](docs/tasks-gantt.png)
+
+### Tasks Kanban View
+![Tasks Kanban View](docs/tasks-kanban.png)
+
+### Tasks List View
+![Tasks List View](docs/tasks-list.png)
+
+### Tasks Table View
+![Tasks Table View](docs/tasks-table.png)
 
 # Tauri + React + Typescript
 

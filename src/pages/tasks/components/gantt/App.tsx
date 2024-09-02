@@ -4,10 +4,11 @@ import { ViewSwitcher } from "./components/view-switcher";
 import "gantt-task-react/dist/index.css";
 import { Task as TaskSchema, TaskUpdate } from "../../data/schema";
 import { prepareGanttData } from "./helper";
+import { Intent } from "../../enums";
 
 interface Props {
   tasks: TaskSchema[];
-  taskUpdateHandler: (task: TaskUpdate) => Promise<void>;
+  taskUpdateHandler: (task: TaskUpdate, intent?: Intent) => Promise<void>;
 }
 
 const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
@@ -48,12 +49,15 @@ const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
         );
       }
     }
-    taskUpdateHandler({
-      id: parseInt(task.id),
-      due_date: task.end,
-      start_date: task.start,
-      title: task.name,
-    } as TaskUpdate);
+    taskUpdateHandler(
+      {
+        id: parseInt(task.id),
+        due_date: task.end,
+        start_date: task.start,
+        title: task.name,
+      } as TaskUpdate,
+      Intent.DEADLINE
+    );
     setGanttTasks(newTasks);
   };
 
@@ -68,10 +72,13 @@ const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
 
   const handleProgressChange = async (task: Task) => {
     console.log(task);
-    taskUpdateHandler({
-      id: parseInt(task.id),
-      progress: task.progress,
-    } as TaskUpdate);
+    taskUpdateHandler(
+      {
+        id: parseInt(task.id),
+        progress: task.progress,
+      } as TaskUpdate,
+      Intent.PROGRESS
+    );
     setGanttTasks(ganttTasks.map((t) => (t.id === task.id ? task : t)));
   };
 
