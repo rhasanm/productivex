@@ -2,15 +2,17 @@ import React, { useEffect } from "react";
 import { Task, ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./components/view-switcher";
 import "gantt-task-react/dist/index.css";
-import { Task as TaskSchema } from "../../data/schema";
+import { Task as TaskSchema, TaskUpdate } from "../../data/schema";
 import { prepareGanttData } from "./helper";
 
 interface Props {
   tasks: TaskSchema[];
+  taskUpdateHandler: (task: TaskUpdate) => Promise<void>;
 }
 
-const GanttChart: React.FC<Props> = ({ tasks }) => {
+const GanttChart: React.FC<Props> = ({ tasks, taskUpdateHandler }) => {
   let preparedTasks = prepareGanttData(tasks);
+  console.log(preparedTasks);
   const [view, setView] = React.useState<ViewMode>(ViewMode.Day);
   const [ganttTasks, setGanttTasks] = React.useState<Task[]>(preparedTasks);
   const [isChecked, setIsChecked] = React.useState(false);
@@ -30,6 +32,7 @@ const GanttChart: React.FC<Props> = ({ tasks }) => {
   }
 
   const handleTaskChange = (task: Task) => {
+    console.log(task);
     let newTasks = ganttTasks.map((t) => (t.id === task.id ? task : t));
     if (task.project) {
       const [start, end] = [task.start, task.end];
@@ -45,10 +48,15 @@ const GanttChart: React.FC<Props> = ({ tasks }) => {
         );
       }
     }
+    taskUpdateHandler({
+      id: parseInt(task.id),
+      due_date: task.end,
+    } as TaskUpdate);
     setGanttTasks(newTasks);
   };
 
   const handleTaskDelete = (task: Task) => {
+    console.log(task);
     const conf = window.confirm("Are you sure about " + task.name + " ?");
     if (conf) {
       setGanttTasks(ganttTasks.filter((t) => t.id !== task.id));
@@ -57,6 +65,7 @@ const GanttChart: React.FC<Props> = ({ tasks }) => {
   };
 
   const handleProgressChange = async (task: Task) => {
+    console.log(task);
     setGanttTasks(ganttTasks.map((t) => (t.id === task.id ? task : t)));
   };
 
@@ -73,6 +82,7 @@ const GanttChart: React.FC<Props> = ({ tasks }) => {
   };
 
   const handleExpanderClick = (task: Task) => {
+    console.log(task);
     setGanttTasks(ganttTasks.map((t) => (t.id === task.id ? task : t)));
   };
 

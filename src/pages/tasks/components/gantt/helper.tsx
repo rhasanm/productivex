@@ -50,7 +50,7 @@ export const prepareGanttData = (tasks: TaskSchema[]): GanttTask[] => {
       const taskType = getTaskType(task);
       const startDate = new Date(task.start_date!);
       const endDate = task.due_date
-        ? task.due_date
+        ? new Date(task.due_date)
         : new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
 
       return {

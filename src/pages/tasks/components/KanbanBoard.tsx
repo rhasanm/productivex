@@ -21,7 +21,7 @@ import { TaskCard } from "./TaskCard";
 import type { Column } from "./BoardColumn";
 import { hasDraggableData } from "./utils";
 import { coordinateGetter } from "./multipleContainersKeyboardPreset";
-import { Task } from "../data/schema";
+import { Task, TaskUpdate } from "../data/schema";
 
 type TaskStatus = "todo" | "in-progress" | "done" | "backlog";
 
@@ -48,10 +48,10 @@ export type ColumnId = (typeof defaultCols)[number]["id"];
 
 interface KanbanBoardProps {
   tasksState: Task[],
-  taskStatusUpdateHandler: (task: Task, tasks: Task[]) => Promise<void>
+  taskUpdateHandler: (task: TaskUpdate) => Promise<void>
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasksState, taskStatusUpdateHandler }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasksState, taskUpdateHandler }) => {
   const [columns, setColumns] = useState<Column[]>(defaultCols);
   const pickedUpTaskColumn = useRef<ColumnId | null>(null);
   const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
@@ -279,7 +279,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasksState, taskStatus
           activeTask.status !== overTask.status
         ) {
           activeTask.status = overTask.status;
-          taskStatusUpdateHandler(activeTask, tasks);
+          taskUpdateHandler(activeTask);
           return arrayMove(tasks, activeIndex, overIndex - 1);
         }
 
@@ -296,10 +296,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasksState, taskStatus
         if (activeTask) {
           activeTask.status = overId as TaskStatus;
           const newTask = arrayMove(tasks, activeIndex, activeIndex);
-          taskStatusUpdateHandler(activeTask, tasks);
+          taskUpdateHandler(activeTask);
           return newTask
         }
-        taskStatusUpdateHandler(activeTask, tasks);
+        taskUpdateHandler(activeTask);
         return tasks;
       });
     }

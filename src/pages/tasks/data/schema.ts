@@ -25,5 +25,21 @@ export const taskSchema = z.object({
   created_at: z.coerce.date().nullable(),
   updated_at: z.coerce.date().nullable(),
 });
+
+
+export const taskUpdateSchema = z.object({
+  id: z.number().nullable(),
+  title: z.string(),
+  description: z.string().nullable(),
+  label: z.string().nullable(),
+  status: z.string().nullable(),
+  priority: z.string().nullable(),
+  due_date: z.coerce.date().nullable(),
+  start_date: z.coerce.date().nullable(),
+  created_at: z.coerce.date().nullable(),
+  updated_at: z.coerce.date().nullable(),
+});
+
 export type Task = z.infer<typeof taskSchema>
 export type TaskInput = z.infer<typeof taskInputSchema>
+export type TaskUpdate = z.infer<typeof taskUpdateSchema>

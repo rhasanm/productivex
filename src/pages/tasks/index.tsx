@@ -3,7 +3,7 @@ import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
-import { Task, TaskInput } from "./data/schema";
+import { Task, TaskInput, TaskUpdate } from "./data/schema";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import TaskList from "./components/list";
@@ -31,17 +31,22 @@ export default function Tasks() {
   const handleTaskComplete = async (taskId: number | null) => {
     if (taskId === null) return;
 
+    const due_date = new Date();
+
     try {
-      await invoke("update_task_status", {
+      await invoke("update_task", {
         payload: {
           task_id: taskId,
-          new_status: "done",
+          status: "done",
+          due_date: due_date,
         },
       });
 
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
-          task.id === taskId ? { ...task, status: "done" } : task
+          task.id === taskId
+            ? { ...task, status: "done", due_date: due_date }
+            : task
         )
       );
     } catch (error) {
@@ -74,37 +79,74 @@ export default function Tasks() {
     }
   };
 
-  const handleTaskStatusUpdate = async (task: Task, newTasks: Task[]) => {
+  const handleTaskUpdate = async (task: TaskUpdate) => {
+    console.log(task);
     try {
-      await invoke("update_task_status", {
-        payload: {
-          task_id: task.id,
-          new_status: task.status,
-        },
-      });
+      const date = new Date();
+      const taskUpdate: Partial<Task> = { id: task.id! };
 
-      if (task.status === "in-progress") {
-        const date = new Date();
+      if (task.due_date) {
         await invoke("update_task", {
           payload: {
             id: task.id,
-            start_date: date,
+            due_date: task.due_date,
           },
         });
-        task.start_date = date;
-      }
-
-      if (task.status === "todo" || task.status === "backlog") {
-        await invoke("update_task", {
+        taskUpdate.due_date = task.due_date;
+      } else {
+        await invoke("update_task_status", {
           payload: {
-            id: task.id,
-            start_date: "null",
+            task_id: task.id,
+            new_status: task.status,
           },
         });
-        task.start_date = null;
-      }
 
-      setTasks(newTasks);
+        if (task.status === "in-progress") {
+          let dueDate: Date | null = task.due_date;
+          if (!dueDate) {
+            dueDate = new Date(date);
+            dueDate.setDate(dueDate.getDate() + 7);
+            taskUpdate.due_date = dueDate;
+          }
+          taskUpdate.start_date = date;
+
+          await invoke("update_task", {
+            payload: {
+              id: task.id,
+              start_date: taskUpdate.start_date,
+              due_date: taskUpdate.due_date,
+            },
+          });
+        }
+
+        if (task.status === "done") {
+          taskUpdate.due_date = date;
+
+          await invoke("update_task", {
+            payload: {
+              id: task.id,
+              due_date: taskUpdate.due_date,
+            },
+          });
+        }
+
+        if (task.status === "todo" || task.status === "backlog") {
+          taskUpdate.start_date = null;
+          taskUpdate.due_date = null;
+
+          await invoke("update_task", {
+            payload: {
+              id: task.id,
+              start_date: taskUpdate.start_date,
+              due_date: taskUpdate.due_date,
+            },
+          });
+        }
+      }
+      setTasks((prevTasks) =>
+        prevTasks.map((t) => (t.id === task.id ? { ...t, ...taskUpdate } : t))
+      );
+
       toast({
         title: `Task status updated to ${task.status}`,
         description: (
@@ -144,15 +186,12 @@ export default function Tasks() {
           </TabsContent>
           <TabsContent value="kanban" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-              <Kanban
-                tasks={tasks}
-                taskStatusUpdateHandler={handleTaskStatusUpdate}
-              />
+              <Kanban tasks={tasks} taskUpdateHandler={handleTaskUpdate} />
             </div>
           </TabsContent>
           <TabsContent value="gantt" className="space-y-4">
             <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0">
-              <GanttChart tasks={tasks} />
+              <GanttChart taskUpdateHandler={handleTaskUpdate} tasks={tasks} />
             </div>
           </TabsContent>
           <TabsContent value="list" className="space-y-4">
