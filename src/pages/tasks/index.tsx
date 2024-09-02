@@ -145,11 +145,13 @@ export default function Tasks() {
 
           if (task.status === "done") {
             taskUpdate.due_date = date;
+            taskUpdate.progress = 100;
 
             await invoke("update_task", {
               payload: {
                 id: task.id,
                 due_date: taskUpdate.due_date,
+                progress: taskUpdate.progress,
               },
             });
           }
@@ -157,12 +159,14 @@ export default function Tasks() {
           if (task.status === "todo" || task.status === "backlog") {
             taskUpdate.start_date = null;
             taskUpdate.due_date = null;
+            taskUpdate.progress = 0;
 
             await invoke("update_task", {
               payload: {
                 id: task.id,
                 start_date: "null",
                 due_date: "null",
+                progress: taskUpdate.progress
               },
             });
           }
