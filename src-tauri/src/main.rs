@@ -4,8 +4,9 @@ use dotenv::dotenv;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
 use std::collections::HashMap;
-use std::env;
+use std::path::PathBuf;
 use std::str::FromStr;
+use std::{env, fs};
 
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -243,7 +244,24 @@ async fn add_task(task: TaskInput, pool: State<'_, SqlitePool>) -> Result<Vec<Ta
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:tasks.db".to_string());
+    let db_file: PathBuf = if cfg!(target_os = "windows") {
+        dirs::data_dir().unwrap().join("productivex\\tasks.db")
+    } else if cfg!(target_os = "macos") {
+        dirs::data_dir()
+            .unwrap()
+            .join("Application Support/productivex/tasks.db")
+    } else {
+        dirs::home_dir()
+            .unwrap()
+            .join(".config/productivex/tasks.db")
+    };
+
+    if let Some(parent_dir) = db_file.parent() {
+        fs::create_dir_all(parent_dir)?;
+    }
+
+    let database_url = format!("sqlite:{}", db_file.to_string_lossy());
+    println!("{}", database_url);
 
     let conn = SqliteConnectOptions::from_str(&database_url)?
         .create_if_missing(true)
